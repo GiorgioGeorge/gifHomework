@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Gif (pronounced Gif) </title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
+    <script src='main.js'></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Gif pronounced Gif</h1>
+        <div id="buttons-view"></div>
+        <form id="musician-form">
+            <label for="musician-input">Add a Gif</label>
+            <input type="text" id="musician-input">
+            <br>
+
+            <!-- Button triggers new movie to be added -->
+            <input id="add-musician" type="submit" value="Add a Musician, Yo!">
+        </form>
+        <div id="gifs-appear-here"></div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+        <script type="text/javascript">
+
+
+            var musicians = ["Kanye", "Prince", "David Bowie", "Mick Jagger", "Daft Punk", "Kendrick Lamar", "Tyler the Creator", "Diana Ross", "Taylor Swift"]
+            function displayMusicianInfo() {
+                $("#gifs-appear-here").empty();
+
+                var musician = $(this).attr("data-name");
+                var queryURL = "https://api.giphy.com/v1/gifs/search?q=" +
+                    musician + "&api_key=dc6zaTOxFJmzC&limit=10";
+
+                $.ajax({
+                    url: queryURL,
+                    method: "GET"
+                }).then(function (response) {
+                    var results = response.data;
+                    for (var i = 0; i < results.length; i++) {
+                        var gifDiv = $("<div>");
+
+                        var rating = results[i].rating;
+
+                        var p = $("<p>").text("Rating: " + rating);
+
+                        var personImage = $("<img>");
+                        personImage.attr("src", results[i].images.fixed_height_still.url);
+                        personImage.attr("data-still", results[i].images.fixed_height_still.url);
+                        personImage.attr("data-animate", results[i].images.fixed_height.url);
+                        personImage.attr("data-state", "still");
+                        personImage.addClass("gif");
+
+                        gifDiv.prepend(p);
+                        gifDiv.prepend(personImage);
+
+                        $("#gifs-appear-here").prepend(gifDiv);
+
+                    }
+                    $(".gif").on("click", function () {
+                        // The attr jQuery method allows us to get or set the value of any attribute on our HTML element
+                        var state = $(this).attr("data-state");
+                        // If the clicked image's state is still, update its src attribute to what its data-animate value is.
+                        // Then, set the image's data-state to animate
+                        // Else set src to the data-still value
+                        if (state === "still") {
+                            $(this).attr("src", $(this).attr("data-animate"));
+                            $(this).attr("data-state", "animate");
+                        } else {
+                            $(this).attr("src", $(this).attr("data-still"));
+                            $(this).attr("data-state", "still");
+                        }
+                    });
+                });
+            }
+
+
+
+            function renderButtons() {
+                $("#gifs-appear-here").empty();
+
+
+                $("#buttons-view").empty();
+
+
+                for (var i = 0; i < musicians.length; i++) {
+
+                    // Then dynamicaly generating buttons for each movie in the array
+                    // This code $("<button>") is all jQuery needs to create the beginning and end tag. (<button></button>)
+                    var a = $("<button>");
+                    // Adding a class of movie-btn to our button
+                    a.addClass("musician-btn");
+                    // Adding a data-attribute
+                    a.attr("data-name", musicians[i]);
+                    // Providing the initial button text
+                    a.text(musicians[i]);
+                    // Adding the button to the buttons-view div
+                    $("#buttons-view").append(a);
+                }
+            }
+
+
+            $("#add-musician").on("click", function (event) {
+                event.preventDefault();
+                // This line grabs the input from the textbox
+                var musician = $("#musician-input").val().trim();
+
+                // Adding movie from the textbox to our array
+                musicians.push(musician);
+
+                // Calling renderButtons which handles the processing of our movie array
+                renderButtons();
+            });
+
+
+            // Adding a click event listener to all elements with a class of "movie-btn"
+            $(document).on("click", ".musician-btn", displayMusicianInfo);
+
+            // Calling the renderButtons function to display the intial buttons
+            renderButtons();
+        </script>
+    </div>
+
+</body>
+
+</html>
